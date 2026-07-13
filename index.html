@@ -620,7 +620,11 @@
       width: 100%;
     }
 
-    /* Firebase Stats Comparison styling */
+    /* Friend stats comparison */
+    .stats-modal-content {
+      max-width: 680px;
+    }
+
     .input-group {
       display: flex;
       gap: 6px;
@@ -710,15 +714,29 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      padding: 14px;
+      border: 1px solid var(--modal-border);
+      border-radius: 8px;
+      background: rgba(128, 128, 128, 0.04);
     }
 
     .stats-col-title {
       font-weight: 700;
       font-size: 15px;
-      margin-bottom: 10px;
+      margin: 4px 0 10px;
       color: var(--correct-color);
       text-transform: uppercase;
       letter-spacing: 0.05em;
+      overflow-wrap: anywhere;
+      text-align: center;
+    }
+
+    .player-label {
+      color: var(--text-secondary);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
     }
 
     .stats-grid-small {
@@ -776,13 +794,101 @@
     }
 
     .comparison-controls {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
       border-top: 1px solid var(--modal-border);
       padding-top: 16px;
       margin-top: 16px;
       width: 100%;
+    }
+
+    .friends-heading {
+      display: flex;
+      align-items: start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .friends-heading h3 {
+      font-size: 15px;
+      margin: 0 0 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .friends-heading p {
+      margin: 0;
+      color: var(--text-secondary);
+      font-size: 12px;
+    }
+
+    .friend-count {
+      flex: 0 0 auto;
+      color: var(--text-secondary);
+      font-size: 12px;
+      padding-top: 2px;
+    }
+
+    .friend-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .friend-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      background: rgba(128, 128, 128, 0.10);
+      border: 1px solid transparent;
+      border-radius: 999px;
+      color: var(--text-color);
+      font-family: inherit;
+      font-size: 13px;
+      padding: 3px 4px 3px 11px;
+    }
+
+    .friend-chip.active {
+      border-color: var(--correct-color);
+      background: rgba(106, 170, 100, 0.14);
+    }
+
+    .friend-select-btn,
+    .friend-remove-btn {
+      border: 0;
+      background: transparent;
+      color: inherit;
+      cursor: pointer;
+      font: inherit;
+      padding: 4px;
+    }
+
+    .friend-select-btn {
+      font-weight: 700;
+    }
+
+    .friend-remove-btn {
+      border-radius: 50%;
+      color: var(--text-secondary);
+      font-size: 18px;
+      line-height: 1;
+      padding: 1px 4px 3px;
+    }
+
+    .friend-remove-btn:hover {
+      background: rgba(128, 128, 128, 0.18);
+      color: var(--text-color);
+    }
+
+    .empty-friends {
+      color: var(--text-secondary);
+      font-size: 13px;
+      margin: 12px 0 0;
+    }
+
+    @media (max-width: 400px) {
+      .stats-comparison-layout.comparing {
+        grid-template-columns: 1fr;
+      }
     }
 
     .hidden {
@@ -890,12 +996,13 @@
 
   <!-- Modal Statistics -->
   <div id="stats-modal" class="modal">
-    <div class="modal-content">
+    <div class="modal-content stats-modal-content">
       <button class="close-btn" id="close-stats">&times;</button>
       <h2>Statistics</h2>
 
       <div class="stats-comparison-layout">
         <div class="stats-column" id="my-stats-col">
+          <div class="player-label">You</div>
           <div class="stats-col-title" id="my-stats-name">You</div>
           <div class="stats-grid-small">
             <div>Played <span id="stat-played">0</span></div>
@@ -905,6 +1012,7 @@
           </div>
         </div>
         <div class="stats-column hidden" id="friend-stats-col">
+          <div class="player-label">Friend</div>
           <div class="stats-col-title" id="friend-stats-name">Friend</div>
           <div class="stats-grid-small">
             <div>Played <span id="f-stat-played">0</span></div>
@@ -932,11 +1040,19 @@
       </div>
 
       <div class="comparison-controls">
-        <div class="input-group">
-          <input type="text" id="compare-input" placeholder="Friend's username" maxlength="15">
-          <button id="compare-btn" class="secondary-btn">Compare</button>
+        <div class="friends-heading">
+          <div>
+            <h3>Friends</h3>
+            <p>Add a player by username, then select them to compare.</p>
+          </div>
+          <span class="friend-count" id="friend-count">0 saved</span>
         </div>
-        <button id="share-link-btn" class="text-link-btn hidden">Copy share link</button>
+        <div class="input-group">
+          <input type="text" id="friend-input" placeholder="Friend's username" maxlength="15" autocomplete="off">
+          <button id="add-friend-btn" class="secondary-btn">Add friend</button>
+        </div>
+        <div class="friend-list" id="friend-list" aria-live="polite"></div>
+        <p class="empty-friends" id="empty-friends">No friends saved yet.</p>
       </div>
 
       <div class="modal-actions" style="margin-top: 24px;">
@@ -1012,7 +1128,7 @@
       "focal", "focus", "foggy", "force", "forge", "forth", "forty", "forum", "found", "foyer",
       "frail", "frame", "frank", "fraud", "fresh", "friar", "frisk", "front", "frost", "frown",
       "fruit", "funny", "games", "giant", "glide", "glory", "glove", "grace", "grade", "grand", "grant",
-      "grape", "graph", "grasp", "grass", "grate", "grave", "gravy", "graze", "great", "greed",
+      "grape", "graph", "grasp", "grass", "grate", "grave", "gravy", "graze", "great", "greed", "greek",
       "green", "greet", "grief", "grill", "grime", "grimy", "grind", "grins", "gripe", "groan",
       "groin", "groom", "grope", "gross", "group", "grove", "growl", "grown", "grows", "guard",
       "guess", "guest", "guide", "habit", "harsh", "haste", "heavy",
@@ -1038,9 +1154,9 @@
       "modem", "modes", "mogul", "moist", "molar", "molds", "moldy", "moles", "money", "monks",
       "month", "moody", "moons", "moose", "moral", "moron", "morse", "motel", "motif", "motor",
       "motto", "mound", "mount", "mourn", "mouse", "mouth", "moved", "mover", "moves", "movie",
-      "mower", "mucky", "mucus", "muddy", "mulch", "mummy", "mumps", "munch", "mural", "murky",
+      "mower", "mucky", "mucus", "muddy", "mummy", "mumps", "munch", "mural", "murky",
       "mused", "muses", "mushy", "music", "muted", "myths", "naked", "nasty", "natal", "naval",
-      "navel", "needs", "never", "newer", "newly", "niche", "niece", "nifty", "night", "ninja",
+      "navel", "needs", "never", "newer", "newly", "niche", "niece", "nifty", "niger", "night", "ninja",
       "ninth", "noble", "nobly", "noise", "noisy", "nomad", "nonce", "noose", "north", "nosed",
       "noses", "notch", "noted", "notes", "nouns", "novel", "nudge", "nurse", "nylon", "nymph",
       "oaken", "oasis", "oaths", "obese", "obeys", "occur", "ocean", "ochre", "octal", "octet",
@@ -1237,11 +1353,15 @@
     const closeHelp = document.getElementById('close-help');
     const closeStats = document.getElementById('close-stats');
 
-    // Firebase loaded elements
-    const compareInput = document.getElementById('compare-input');
-    const compareBtn = document.getElementById('compare-btn');
-    const shareLinkBtn = document.getElementById('share-link-btn');
+    // Friend comparison elements
+    const friendInput = document.getElementById('friend-input');
+    const addFriendBtn = document.getElementById('add-friend-btn');
+    const friendList = document.getElementById('friend-list');
+    const friendCount = document.getElementById('friend-count');
+    const emptyFriends = document.getElementById('empty-friends');
     const saveIdentityBtn = document.getElementById('save-identity-btn');
+    const FRIENDS_STORAGE_KEY = 'wordle-friends-v1';
+    let selectedFriendUsername = null;
 
     // Firebase Database Helper functions
     async function registerPlayer(username, pin, stats) {
@@ -1291,6 +1411,163 @@
       return null;
     }
 
+    function createDefaultStats() {
+      return {
+        played: 0,
+        won: 0,
+        currentStreak: 0,
+        maxStreak: 0,
+        distribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 }
+      };
+    }
+
+    function normaliseStats(stats = {}) {
+      const defaults = createDefaultStats();
+      return {
+        ...defaults,
+        ...stats,
+        distribution: { ...defaults.distribution, ...(stats.distribution || {}) }
+      };
+    }
+
+    function getFriends() {
+      try {
+        const savedFriends = JSON.parse(localStorage.getItem(FRIENDS_STORAGE_KEY) || '[]');
+        if (!Array.isArray(savedFriends)) return [];
+
+        const usernames = new Set();
+        return savedFriends.reduce((friends, friend) => {
+          if (!friend || (typeof friend !== 'string' && typeof friend !== 'object')) return friends;
+          const displayName = typeof friend === 'string' ? friend : friend.displayName;
+          const username = (typeof friend === 'string' ? friend : friend.username || displayName || '').toLowerCase();
+          if (!/^[a-z0-9]{2,15}$/.test(username) || usernames.has(username)) return friends;
+
+          usernames.add(username);
+          friends.push({ username, displayName: displayName || username });
+          return friends;
+        }, []);
+      } catch (err) {
+        console.warn('Could not read saved friends:', err);
+        return [];
+      }
+    }
+
+    function saveFriends(friends) {
+      localStorage.setItem(FRIENDS_STORAGE_KEY, JSON.stringify(friends));
+    }
+
+    function clearComparison() {
+      selectedFriendUsername = null;
+      document.getElementById('friend-stats-col').classList.add('hidden');
+      document.getElementById('friend-chart-col').classList.add('hidden');
+      document.querySelector('.stats-comparison-layout').classList.remove('comparing');
+      document.querySelector('.charts-comparison-layout').classList.remove('comparing');
+    }
+
+    function renderFriendList() {
+      const friends = getFriends();
+      friendCount.textContent = `${friends.length} saved`;
+      friendList.innerHTML = '';
+      emptyFriends.classList.toggle('hidden', friends.length > 0);
+
+      friends.forEach((friend) => {
+        const chip = document.createElement('div');
+        chip.className = `friend-chip${friend.username === selectedFriendUsername ? ' active' : ''}`;
+
+        const selectButton = document.createElement('button');
+        selectButton.className = 'friend-select-btn';
+        selectButton.type = 'button';
+        selectButton.textContent = friend.displayName;
+        selectButton.title = `Compare your stats with ${friend.displayName}`;
+        selectButton.addEventListener('click', () => selectFriend(friend));
+
+        const removeButton = document.createElement('button');
+        removeButton.className = 'friend-remove-btn';
+        removeButton.type = 'button';
+        removeButton.innerHTML = '&times;';
+        removeButton.setAttribute('aria-label', `Remove ${friend.displayName} from friends`);
+        removeButton.title = `Remove ${friend.displayName}`;
+        removeButton.addEventListener('click', () => removeFriend(friend.username));
+
+        chip.append(selectButton, removeButton);
+        friendList.appendChild(chip);
+      });
+    }
+
+    async function selectFriend(friend, announce = true) {
+      try {
+        const friendData = await fetchPlayerStats(friend.username);
+        if (!friendData) {
+          showToast(`${friend.displayName} is no longer available.`);
+          return false;
+        }
+
+        selectedFriendUsername = friend.username;
+        renderComparison(friendData);
+        renderFriendList();
+        if (announce) showToast(`Comparing with ${friendData.displayName}!`);
+        return true;
+      } catch (err) {
+        console.error('Friend stats fetch error:', err);
+        showToast('Could not refresh friend stats. Try again.');
+        return false;
+      }
+    }
+
+    function removeFriend(username) {
+      saveFriends(getFriends().filter((friend) => friend.username !== username));
+      if (selectedFriendUsername === username) clearComparison();
+      renderFriendList();
+      showToast('Friend removed.');
+    }
+
+    async function addFriend() {
+      if (addFriendBtn.disabled) return;
+
+      const displayName = friendInput.value.trim();
+      const username = displayName.toLowerCase();
+      const myUsername = localStorage.getItem('wordle-username')?.toLowerCase();
+
+      if (!/^[a-zA-Z0-9]{2,15}$/.test(displayName)) {
+        showToast('Username must be 2-15 letters or numbers.');
+        return;
+      }
+      if (username === myUsername) {
+        showToast('You cannot add yourself.');
+        return;
+      }
+
+      addFriendBtn.disabled = true;
+      addFriendBtn.textContent = 'Adding...';
+      try {
+        const friendData = await fetchPlayerStats(username);
+        if (!friendData) {
+          showToast(`User "${displayName}" not found.`);
+          return;
+        }
+
+        const friends = getFriends();
+        const existingFriend = friends.find((friend) => friend.username === username);
+        const friend = { username, displayName: friendData.displayName || displayName };
+        if (!existingFriend) {
+          friends.push(friend);
+          saveFriends(friends);
+          showToast(`${friend.displayName} added to friends!`);
+        }
+
+        friendInput.value = '';
+        selectedFriendUsername = username;
+        renderComparison(friendData);
+        renderFriendList();
+      } catch (err) {
+        console.error('Add friend error:', err);
+        showToast('Could not add friend. Try again.');
+      } finally {
+        addFriendBtn.disabled = false;
+        addFriendBtn.textContent = 'Add friend';
+      }
+    }
+
     async function checkUserIdentity() {
       const savedUsername = localStorage.getItem('wordle-username');
       if (!savedUsername) {
@@ -1307,16 +1584,16 @@
       if (friendName) {
         try {
           const friendData = await fetchPlayerStats(friendName);
-          if (friendData) {
-            compareInput.value = friendData.displayName;
+          const username = friendName.toLowerCase();
+          if (friendData && username !== localStorage.getItem('wordle-username')?.toLowerCase()) {
+            const friends = getFriends();
+            if (!friends.some((friend) => friend.username === username)) {
+              friends.push({ username, displayName: friendData.displayName || friendName });
+              saveFriends(friends);
+            }
+            selectedFriendUsername = username;
             renderComparison(friendData);
-
-            const shareUrl = `${window.location.origin}${window.location.pathname}?compare=${friendData.displayName}`;
-            shareLinkBtn.classList.remove('hidden');
-            shareLinkBtn.onclick = () => {
-              navigator.clipboard.writeText(shareUrl);
-              showToast("Link copied to clipboard!");
-            };
+            renderFriendList();
           }
         } catch (err) {
           console.error("Url param fetch error:", err);
@@ -1330,9 +1607,10 @@
       document.querySelector('.stats-comparison-layout').classList.add('comparing');
       document.querySelector('.charts-comparison-layout').classList.add('comparing');
 
-      const fStats = friendData.stats || { played: 0, won: 0, currentStreak: 0, maxStreak: 0, distribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 } };
-      document.getElementById('friend-stats-name').textContent = friendData.displayName;
-      document.getElementById('friend-chart-title').textContent = friendData.displayName;
+      const fStats = normaliseStats(friendData.stats);
+      const friendName = friendData.displayName || 'Friend';
+      document.getElementById('friend-stats-name').textContent = friendName;
+      document.getElementById('friend-chart-title').textContent = friendName;
 
       document.getElementById('f-stat-played').textContent = fStats.played;
       const fWinPct = fStats.played > 0 ? Math.round((fStats.won / fStats.played) * 100) : 0;
@@ -1409,48 +1687,9 @@
       }
     });
 
-    // Comparison Event Listener
-    compareBtn.addEventListener('click', async () => {
-      const friendName = compareInput.value.trim();
-      if (!friendName) {
-        showToast("Enter a friend's name");
-        return;
-      }
-      if (friendName.toLowerCase() === localStorage.getItem('wordle-username')?.toLowerCase()) {
-        showToast("Cannot compare with yourself!");
-        return;
-      }
-
-      compareBtn.disabled = true;
-      compareBtn.textContent = "...";
-
-      try {
-        const friendData = await fetchPlayerStats(friendName);
-        if (friendData) {
-          showToast(`Comparing with ${friendData.displayName}!`);
-          renderComparison(friendData);
-
-          const shareUrl = `${window.location.origin}${window.location.pathname}?compare=${friendData.displayName}`;
-          shareLinkBtn.classList.remove('hidden');
-          shareLinkBtn.onclick = () => {
-            navigator.clipboard.writeText(shareUrl);
-            showToast("Link copied to clipboard!");
-          };
-        } else {
-          showToast(`User "${friendName}" not found.`);
-          document.getElementById('friend-stats-col').classList.add('hidden');
-          document.getElementById('friend-chart-col').classList.add('hidden');
-          document.querySelector('.stats-comparison-layout').classList.remove('comparing');
-          document.querySelector('.charts-comparison-layout').classList.remove('comparing');
-          shareLinkBtn.classList.add('hidden');
-        }
-      } catch (err) {
-        console.error(err);
-        showToast("Error fetching stats.");
-      } finally {
-        compareBtn.disabled = false;
-        compareBtn.textContent = "Compare";
-      }
+    addFriendBtn.addEventListener('click', addFriend);
+    friendInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') addFriend();
     });
 
     // Initialize Game
@@ -1502,6 +1741,7 @@
     helpBtn.addEventListener('click', () => openModal(helpModal));
     statsBtn.addEventListener('click', () => {
       populateStats();
+      renderFriendList();
       openModal(statsModal);
     });
 
@@ -1778,19 +2018,13 @@
 
     // Stats Module logic
     function getStats() {
-      let stats = localStorage.getItem("wordle-stats-v1");
-      if (!stats) {
-        stats = {
-          played: 0,
-          won: 0,
-          currentStreak: 0,
-          maxStreak: 0,
-          distribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 }
-        };
-      } else {
-        stats = JSON.parse(stats);
+      try {
+        const savedStats = localStorage.getItem("wordle-stats-v1");
+        return normaliseStats(savedStats ? JSON.parse(savedStats) : {});
+      } catch (err) {
+        console.warn('Could not read saved stats:', err);
+        return createDefaultStats();
       }
-      return stats;
     }
 
     function saveStats(won, guessesCount) {
@@ -1873,6 +2107,7 @@
     // Start Game & Checks
     initGame();
     checkUserIdentity();
+    renderFriendList();
     checkUrlParams();
   </script>
 </body>
